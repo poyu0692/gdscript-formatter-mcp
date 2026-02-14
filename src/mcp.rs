@@ -177,107 +177,95 @@ pub fn handle_request(request: &Value, manager: &FormatterManager) -> Option<Val
             };
 
             match name {
-                "gdscript_format" => {
-                    return match call_gdscript_format(manager, &arguments) {
-                        Ok(result) => {
-                            let summary = render_format_summary(&result);
-                            let structured = format_structured_content(&result);
-                            Some(success_response(
-                                id,
-                                json!({
-                                    "isError": !result.success,
-                                    "content": [
-                                        {"type": "text", "text": summary}
-                                    ],
-                                    "structuredContent": structured
-                                }),
-                            ))
-                        }
-                        Err(text) => Some(success_response(
+                "gdscript_format" => match call_gdscript_format(manager, &arguments) {
+                    Ok(result) => {
+                        let summary = render_format_summary(&result);
+                        let structured = format_structured_content(&result);
+                        Some(success_response(
                             id,
                             json!({
-                                "isError": true,
+                                "isError": !result.success,
                                 "content": [
-                                    {"type": "text", "text": "Format failed. failed_count=1."}
+                                    {"type": "text", "text": summary}
                                 ],
-                                "structuredContent": {
-                                    "ok": false,
-                                    "failed_count": 1,
-                                    "failures_truncated": false,
-                                    "failures": [
-                                        {
-                                            "file": "<internal>",
-                                            "reason": text
-                                        }
-                                    ]
-                                }
+                                "structuredContent": structured
                             }),
-                        )),
-                    };
-                }
-                "gdscript_lint" => {
-                    return match call_gdscript_lint(manager, &arguments) {
-                        Ok(result) => {
-                            let summary = render_lint_summary(&result);
-                            let (diagnostics, diagnostics_truncated) = project_lint_diagnostics(
-                                &result.diagnostics,
-                                result.max_diagnostics,
-                            );
-                            let mut structured = json!({
-                                "ok": result.success,
-                                "exit_code": result.exit_code,
-                                "total_diagnostics": result.diagnostics.len(),
-                                "error_count": result.error_count,
-                                "warning_count": result.warning_count,
-                                "max_diagnostics": result.max_diagnostics,
-                                "diagnostics_truncated": diagnostics_truncated,
-                                "diagnostics": diagnostics
-                            });
-                            if result.include_raw_output {
-                                if let Some(map) = structured.as_object_mut() {
-                                    map.insert(
-                                        "raw_stdout".to_owned(),
-                                        Value::String(result.stdout),
-                                    );
-                                    map.insert(
-                                        "raw_stderr".to_owned(),
-                                        Value::String(result.stderr),
-                                    );
-                                }
+                        ))
+                    }
+                    Err(text) => Some(success_response(
+                        id,
+                        json!({
+                            "isError": true,
+                            "content": [
+                                {"type": "text", "text": "Format failed. failed_count=1."}
+                            ],
+                            "structuredContent": {
+                                "ok": false,
+                                "failed_count": 1,
+                                "failures_truncated": false,
+                                "failures": [
+                                    {
+                                        "file": "<internal>",
+                                        "reason": text
+                                    }
+                                ]
                             }
-                            Some(success_response(
-                                id,
-                                json!({
-                                    "isError": !result.success,
-                                    "content": [
-                                        {"type": "text", "text": summary}
-                                    ],
-                                    "structuredContent": structured
-                                }),
-                            ))
+                        }),
+                    )),
+                },
+                "gdscript_lint" => match call_gdscript_lint(manager, &arguments) {
+                    Ok(result) => {
+                        let summary = render_lint_summary(&result);
+                        let (diagnostics, diagnostics_truncated) =
+                            project_lint_diagnostics(&result.diagnostics, result.max_diagnostics);
+                        let mut structured = json!({
+                            "ok": result.success,
+                            "exit_code": result.exit_code,
+                            "total_diagnostics": result.diagnostics.len(),
+                            "error_count": result.error_count,
+                            "warning_count": result.warning_count,
+                            "max_diagnostics": result.max_diagnostics,
+                            "diagnostics_truncated": diagnostics_truncated,
+                            "diagnostics": diagnostics
+                        });
+                        if result.include_raw_output
+                            && let Some(map) = structured.as_object_mut()
+                        {
+                            map.insert("raw_stdout".to_owned(), Value::String(result.stdout));
+                            map.insert("raw_stderr".to_owned(), Value::String(result.stderr));
                         }
-                        Err(text) => Some(success_response(
+                        Some(success_response(
                             id,
                             json!({
-                                "isError": true,
+                                "isError": !result.success,
                                 "content": [
-                                    {"type": "text", "text": text}
+                                    {"type": "text", "text": summary}
                                 ],
-                                "structuredContent": {
-                                    "ok": false,
-                                    "exit_code": -1,
-                                    "total_diagnostics": 0,
-                                    "error_count": 0,
-                                    "warning_count": 0,
-                                    "max_diagnostics": DEFAULT_MAX_DIAGNOSTICS,
-                                    "diagnostics_truncated": false,
-                                    "diagnostics": []
-                                }
+                                "structuredContent": structured
                             }),
-                        )),
-                    };
-                }
-                _ => return Some(error_response(id, -32602, "Unknown tool name")),
+                        ))
+                    }
+                    Err(text) => Some(success_response(
+                        id,
+                        json!({
+                            "isError": true,
+                            "content": [
+                                {"type": "text", "text": text}
+                            ],
+                            "structuredContent": {
+                                "ok": false,
+                                "exit_code": -1,
+                                "total_diagnostics": 0,
+                                "error_count": 0,
+                                "warning_count": 0,
+                                "max_diagnostics": DEFAULT_MAX_DIAGNOSTICS,
+                                "diagnostics_truncated": false,
+                                "diagnostics": []
+                            }
+                        }),
+                    )),
+                },
+                _ => Some(error_response(id, -32602, "Unknown tool name")),
             }
         }
         _ => Some(error_response(id, -32601, "Method not found")),

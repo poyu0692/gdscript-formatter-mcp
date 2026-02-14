@@ -23,16 +23,16 @@ pub fn read_mcp_message<R: BufRead>(reader: &mut R) -> io::Result<Option<Value>>
             break;
         }
 
-        if let Some((name, value)) = line.split_once(':') {
-            if name.eq_ignore_ascii_case("Content-Length") {
-                let len = value.trim().parse::<usize>().map_err(|e| {
-                    io::Error::new(
-                        io::ErrorKind::InvalidData,
-                        format!("Invalid Content-Length header: {e}"),
-                    )
-                })?;
-                content_length = Some(len);
-            }
+        if let Some((name, value)) = line.split_once(':')
+            && name.eq_ignore_ascii_case("Content-Length")
+        {
+            let len = value.trim().parse::<usize>().map_err(|e| {
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    format!("Invalid Content-Length header: {e}"),
+                )
+            })?;
+            content_length = Some(len);
         }
     }
 

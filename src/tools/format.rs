@@ -17,6 +17,7 @@ pub struct FormatFailure {
     pub reason: String,
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_format_command(
     binary_path: &Path,
     check: bool,
@@ -77,10 +78,10 @@ fn extract_format_failure_reason(stdout: &str, stderr: &str) -> String {
     }
 
     for line in stderr.lines() {
-        if let Some((_, rest)) = line.split_once("Failed to format file ") {
-            if let Some((_, reason)) = rest.split_once(':') {
-                return normalize_reason(reason.trim_matches('"'));
-            }
+        if let Some((_, rest)) = line.split_once("Failed to format file ")
+            && let Some((_, reason)) = rest.split_once(':')
+        {
+            return normalize_reason(reason.trim_matches('"'));
         }
     }
 
@@ -141,10 +142,10 @@ pub fn call_gdscript_format(
     let safe = get_bool(arguments, "safe")?;
     let indent_size = get_optional_i64(arguments, "indent_size")?;
 
-    if let Some(size) = indent_size {
-        if size < 1 {
-            return Err("`indent_size` must be at least 1".to_owned());
-        }
+    if let Some(size) = indent_size
+        && size < 1
+    {
+        return Err("`indent_size` must be at least 1".to_owned());
     }
 
     let binary = manager.ensure_binary()?;

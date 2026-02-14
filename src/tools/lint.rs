@@ -103,10 +103,10 @@ pub fn call_gdscript_lint(
     let max_diagnostics =
         get_optional_usize(arguments, "max_diagnostics")?.unwrap_or(DEFAULT_MAX_DIAGNOSTICS);
 
-    if let Some(value) = max_line_length {
-        if value < 1 {
-            return Err("`max_line_length` must be at least 1".to_owned());
-        }
+    if let Some(value) = max_line_length
+        && value < 1
+    {
+        return Err("`max_line_length` must be at least 1".to_owned());
     }
     if files.is_empty() && !list_rules {
         return Err(
