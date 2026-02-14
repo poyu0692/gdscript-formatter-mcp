@@ -1,0 +1,8 @@
+/target
+/.gdscript-formatter-mcp-cache
+/fixtures
+*.swp
+*.swo
+.DS_Store
+.idea/
+.vscode/
