@@ -46,75 +46,87 @@ GDQuest の `GDScript-formatter` 最新リリースを自動取得して、MCP �
 
 ## インストール
 
-### プリビルドバイナリ（推奨）
+### 方法1: インストールスクリプト使用（推奨）
 
-各プラットフォーム向けのプリビルドバイナリを [GitHub Releases](https://github.com/poyu0692/gdscript-formatter-mcp/releases) からダウンロードできます。
+自動的にプリビルドバイナリをダウンロードして配置します。
 
-#### Linux / macOS
+**Linux / macOS:**
 
 ```bash
-# リポジトリをクローン（インストールスクリプトを使う場合）
 git clone https://github.com/poyu0692/gdscript-formatter-mcp.git
 cd gdscript-formatter-mcp
-
-# 最新版を自動インストール
 scripts/install.sh install
-
-# 動作確認
-scripts/install.sh doctor
 ```
 
-インストール先：
-- バイナリ: `~/.local/share/mcp/gdscript-formatter-mcp/<version>/`
-- シンボリックリンク: `~/.local/bin/gdscript-formatter-mcp`
+インストール先: `~/.local/bin/gdscript-formatter-mcp`
 
-#### Windows
+**Windows:**
 
 ```powershell
-# リポジトリをクローン（インストールスクリプトを使う場合）
 git clone https://github.com/poyu0692/gdscript-formatter-mcp.git
 cd gdscript-formatter-mcp
-
-# 最新版を自動インストール
 .\scripts\install.ps1 install
+```
 
-# 動作確認
+インストール先: `%LOCALAPPDATA%\bin\gdscript-formatter-mcp.exe`
+
+**動作確認:**
+
+```bash
+# Linux/macOS
+scripts/install.sh doctor
+
+# Windows
 .\scripts\install.ps1 doctor
 ```
 
-インストール先：
-- バイナリ: `%LOCALAPPDATA%\mcp\gdscript-formatter-mcp\<version>\`
-- シンボリックリンク: `%LOCALAPPDATA%\bin\gdscript-formatter-mcp.exe`
+### 方法2: 手動インストール
 
-#### 手動インストール
+[GitHub Releases](https://github.com/poyu0692/gdscript-formatter-mcp/releases) から環境に合ったバイナリをダウンロードします。
 
-[Releases ページ](https://github.com/poyu0692/gdscript-formatter-mcp/releases) から環境に合ったバイナリをダウンロードして、任意の場所に配置してください。
+**Linux / macOS:**
 
-### ソースからビルド
+```bash
+# ダウンロード（例: Linux x86_64）
+curl -LO https://github.com/poyu0692/gdscript-formatter-mcp/releases/latest/download/gdscript-formatter-mcp-x86_64-unknown-linux-gnu.tar.gz
+
+# 解凍
+tar xzf gdscript-formatter-mcp-x86_64-unknown-linux-gnu.tar.gz
+
+# 任意の場所に配置（例: ~/.local/bin）
+mkdir -p ~/.local/bin
+mv gdscript-formatter-mcp ~/.local/bin/
+chmod +x ~/.local/bin/gdscript-formatter-mcp
+```
+
+**Windows:**
+
+1. [Releases ページ](https://github.com/poyu0692/gdscript-formatter-mcp/releases) から `gdscript-formatter-mcp-x86_64-pc-windows-msvc.zip` をダウンロード
+2. 解凍して `gdscript-formatter-mcp.exe` を任意の場所に配置
+3. MCP クライアント設定でそのパスを指定
+
+### 方法3: ソースからビルド（開発者向け）
 
 Rust ツールチェインが必要です。
 
 ```bash
-# リポジトリをクローン
 git clone https://github.com/poyu0692/gdscript-formatter-mcp.git
 cd gdscript-formatter-mcp
-
-# リリースビルド
 cargo build --release
 
-# インストール（オプション）
+# オプション: インストールスクリプト経由でインストール
 scripts/install.sh install --from-source
 ```
 
-実行バイナリ: `./target/release/gdscript-formatter-mcp`
+ビルド成果物: `./target/release/gdscript-formatter-mcp`
 
-### インストーラのサブコマンド
+### インストールスクリプトの追加オプション
 
 ```bash
 # 特定バージョンをインストール
 scripts/install.sh install --version v0.1.0
 
-# インストール状態確認
+# バージョン一覧とステータス確認
 scripts/install.sh status
 
 # バージョン切り替え
@@ -123,16 +135,15 @@ scripts/install.sh link 0.1.0
 # アンインストール
 scripts/install.sh uninstall 0.1.0
 scripts/install.sh uninstall --all  # 全バージョン削除
-
-# MCP 疎通確認
-scripts/install.sh doctor
 ```
 
 ## MCP クライアント設定
 
-Claude Desktop や他の MCP クライアントで使用する場合、設定ファイルに追加します。
+Claude Desktop などの MCP クライアントで使用する場合、設定ファイルに以下を追加します。
 
-**Linux / macOS** (`~/.config/claude-desktop/config.json` など):
+### インストールスクリプトを使用した場合
+
+**Linux / macOS** (`~/.config/claude-desktop/config.json`):
 
 ```json
 {
@@ -144,7 +155,9 @@ Claude Desktop や他の MCP クライアントで使用する場合、設定フ
 }
 ```
 
-**Windows** (`%APPDATA%\Claude\config.json` など):
+`YOUR_USERNAME` を実際のユーザー名に置き換えてください。または `~/.local/bin/gdscript-formatter-mcp` のように `~` を使える場合もあります。
+
+**Windows** (`%APPDATA%\Claude\config.json`):
 
 ```json
 {
@@ -156,7 +169,23 @@ Claude Desktop や他の MCP クライアントで使用する場合、設定フ
 }
 ```
 
-設定後、MCP クライアントを再起動してください。
+`YOUR_USERNAME` を実際のユーザー名に置き換えてください。
+
+### 手動インストール or ソースビルドの場合
+
+バイナリを配置した実際のパスを指定してください。
+
+```json
+{
+  "mcpServers": {
+    "gdscript-formatter": {
+      "command": "/path/to/gdscript-formatter-mcp"
+    }
+  }
+}
+```
+
+**設定後は MCP クライアントを再起動してください。**
 
 ## 提供ツール
 
@@ -221,9 +250,11 @@ Claude Desktop や他の MCP クライアントで使用する場合、設定フ
   - `file`, `line`, `column`, `rule`, `severity`, `message`
 - `raw_stdout` / `raw_stderr` は `include_raw_output=true` の時のみ返却
 
-## AI 入出力例（tools/call）
+## 使用例
 
-デフォルトはコンテキスト節約のため軽量返却です。詳細ログが必要な場合だけ `gdscript_lint` で `include_raw_output=true` を指定してください（`max_diagnostics` で件数制御できます）。
+MCP ツールとしての入出力例です。AI がこれらのツールを呼び出すと、以下のような形式で結果が返されます。
+
+**注意**: 返却内容はコンテキスト節約のため最小化されています。詳細ログが必要な場合は `gdscript_lint` で `include_raw_output=true` を指定してください。
 
 ### `gdscript_format` の例
 
