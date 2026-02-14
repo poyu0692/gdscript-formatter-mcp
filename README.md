@@ -185,7 +185,94 @@ Claude Desktop などの MCP クライアントで使用する場合、設定フ
 }
 ```
 
+### Claude Code (CLI)
+
+**全プラットフォーム** (`~/.claude/config.json`):
+
+```json
+{
+  "mcpServers": {
+    "gdscript-formatter": {
+      "command": "~/.local/bin/gdscript-formatter-mcp"
+    }
+  }
+}
+```
+
+Windows の場合は `%USERPROFILE%\.local\bin\gdscript-formatter-mcp.exe` などのパスを指定してください。
+
 **設定後は MCP クライアントを再起動してください。**
+
+## プロジェクトでの使い方
+
+### AGENTS.md への記載例
+
+Godot プロジェクトの `AGENTS.md` に以下のような指示を追加すると、AI がコード編集後に自動的にフォーマット＆Lint を実行してくれます。
+
+```markdown
+# GDScript コーディング規約
+
+## フォーマットと Lint
+
+コードを編集・追加したら、**必ず以下を実行してください**:
+
+### 1. フォーマット実行
+
+`gdscript_format` ツールを使用してコードを整形します。
+
+**単一ファイルの場合:**
+- ツール: `gdscript_format`
+- 引数: `{"files": ["path/to/edited.gd"]}`
+
+**ディレクトリ全体の場合:**
+- ツール: `gdscript_format`
+- 引数: `{"dir": "addons/your_addon", "include": ["**/*.gd"]}`
+
+**チェックのみ（変更しない）:**
+- 引数に `"check": true` を追加
+
+### 2. Lint 実行
+
+`gdscript_lint` ツールでコード品質をチェックします。
+
+**単一ファイルの場合:**
+- ツール: `gdscript_lint`
+- 引数: `{"files": ["path/to/edited.gd"]}`
+
+**ディレクトリ全体の場合:**
+- ツール: `gdscript_lint`
+- 引数: `{"dir": "addons/your_addon", "include": ["**/*.gd"]}`
+
+### 3. 問題があれば修正して再実行
+
+Lint でエラーや警告が出た場合は、コードを修正してから再度フォーマット＆Lint を実行してください。
+
+## 典型的なワークフロー
+
+1. GDScript ファイルを編集
+2. `gdscript_format` で整形（`check: false`）
+3. `gdscript_lint` でチェック
+4. 問題があれば修正して 2-3 を繰り返す
+5. コミット前に全体を再チェック（`check: true`）
+```
+
+### プロジェクト全体の定期チェック
+
+コミット前やプルリクエスト作成前に、プロジェクト全体をチェックする習慣をつけると良いでしょう。
+
+```bash
+# MCP クライアント経由で以下を実行
+gdscript_format:
+  dir: "."
+  include: ["**/*.gd"]
+  exclude: ["addons/third_party/**"]
+  check: true
+
+gdscript_lint:
+  dir: "."
+  include: ["**/*.gd"]
+  exclude: ["addons/third_party/**"]
+```
 
 ## 提供ツール
 
